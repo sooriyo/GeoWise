@@ -9,16 +9,15 @@ class DashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title:    const Text(
+        'Welcome Alina!',
+        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const Text(
-              'Welcome Alina!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
             const SizedBox(height: 16),
             Expanded(
               child: GridView.count(
@@ -45,7 +44,7 @@ class DashboardPage extends StatelessWidget {
                     child: _buildLineChart(),
                   ),
                   _buildCard(
-                    title: 'Soil Moisture',
+                    title: 'PH Level',
                     value: '43%',
                     color: Colors.lightGreenAccent,
                     child: const SizedBox(),
