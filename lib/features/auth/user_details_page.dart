@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'polytunnel_registration_page.dart';
 
 class UserDetailsPage extends StatelessWidget {
@@ -11,6 +12,51 @@ class UserDetailsPage extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
 
   UserDetailsPage({super.key});
+
+  Future<void> _submit(BuildContext context) async {
+    if (_formKey.currentState?.validate() ?? false) {
+      try {
+        Dio dio = Dio();
+        final response = await dio.post(
+          'http://192.168.8.191:3000/user',
+          data: {
+            'userProfile': 'admin',
+            'name': nameController.text,
+            'email': emailController.text,
+            'phone': phoneController.text,
+            'address': addressController.text,
+            'password': passwordController.text,
+          },
+          options: Options(
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          ),
+        );
+
+        if (response.statusCode == 201) {
+          print(response.statusCode);
+          // If the server returns an OK response, navigate to the Polytunnel Registration Page
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => PolytunnelRegistrationPage()),
+          );
+        } else {
+          print(response.statusCode);
+          // If the server did not return a 200 OK response, display an error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to create user')),
+          );
+        }
+      } catch (e) {
+        print(e);
+        // Display an error message if the request fails
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -152,14 +198,8 @@ class UserDetailsPage extends StatelessWidget {
               ),
               const SizedBox(height: 30),
               ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState?.validate() ?? false) {
-                    // Navigate to Polytunnel Registration Page
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => PolytunnelRegistrationPage()),
-                    );
-                  }
+                onPressed: () async {
+                  await _submit(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
