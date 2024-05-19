@@ -1,22 +1,44 @@
 import 'package:flutter/material.dart';
-import 'polytunnel_registration_page.dart';
+import '../dashboard/dashboard_page.dart';
 
-class UserDetailsPage extends StatelessWidget {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController addressController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+class CropDetailsPage extends StatefulWidget {
+  CropDetailsPage({super.key});
+
+  @override
+  _CropDetailsPageState createState() => _CropDetailsPageState();
+}
+
+class _CropDetailsPageState extends State<CropDetailsPage> {
+  final TextEditingController cropNameController = TextEditingController();
+  final TextEditingController plantedDateController = TextEditingController();
+  final TextEditingController plantQuantityController = TextEditingController();
+  final TextEditingController varietyController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
-  UserDetailsPage({super.key});
+  final List<String> varieties = [
+    'Capsicum',
+    'Bell Pepper',
+    'Green Chilli',
+    'Salad Cucumber',
+    'Hot Pepper',
+    'Tomato'
+  ];
+
+  @override
+  void dispose() {
+    cropNameController.dispose();
+    plantedDateController.dispose();
+    plantQuantityController.dispose();
+    varietyController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Details'),
+        title: const Text('Crop Details'),
         backgroundColor: Colors.black,
       ),
       body: Padding(
@@ -26,9 +48,9 @@ class UserDetailsPage extends StatelessWidget {
           child: Column(
             children: [
               TextFormField(
-                controller: nameController,
+                controller: cropNameController,
                 decoration: InputDecoration(
-                  labelText: 'Name',
+                  labelText: 'Crop Name',
                   labelStyle: const TextStyle(color: Colors.black),
                   enabledBorder: OutlineInputBorder(
                     borderSide: const BorderSide(color: Colors.grey),
@@ -44,16 +66,50 @@ class UserDetailsPage extends StatelessWidget {
                 style: const TextStyle(color: Colors.black),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your name';
+                    return 'Please enter the crop name';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                items: varieties.map((String variety) {
+                  return DropdownMenuItem<String>(
+                    value: variety,
+                    child: Text(variety),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  setState(() {
+                    varietyController.text = newValue!;
+                  });
+                },
+                decoration: InputDecoration(
+                  labelText: 'Variety',
+                  labelStyle: const TextStyle(color: Colors.black),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.black),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please select a variety';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: emailController,
+                controller: plantedDateController,
                 decoration: InputDecoration(
-                  labelText: 'Email',
+                  labelText: 'Planted Date',
                   labelStyle: const TextStyle(color: Colors.black),
                   enabledBorder: OutlineInputBorder(
                     borderSide: const BorderSide(color: Colors.grey),
@@ -67,18 +123,34 @@ class UserDetailsPage extends StatelessWidget {
                   fillColor: Colors.white,
                 ),
                 style: const TextStyle(color: Colors.black),
+                readOnly: true,
+                onTap: () async {
+                  DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2101),
+                  );
+
+                  if (pickedDate != null) {
+                    setState(() {
+                      plantedDateController.text =
+                      "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                    });
+                  }
+                },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
+                    return 'Please select a planted date';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: addressController,
+                controller: plantQuantityController,
                 decoration: InputDecoration(
-                  labelText: 'Address',
+                  labelText: 'Plant Quantity',
                   labelStyle: const TextStyle(color: Colors.black),
                   enabledBorder: OutlineInputBorder(
                     borderSide: const BorderSide(color: Colors.grey),
@@ -92,60 +164,10 @@ class UserDetailsPage extends StatelessWidget {
                   fillColor: Colors.white,
                 ),
                 style: const TextStyle(color: Colors.black),
+                keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your address';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: phoneController,
-                decoration: InputDecoration(
-                  labelText: 'Phone',
-                  labelStyle: const TextStyle(color: Colors.black),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.black),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                style: const TextStyle(color: Colors.black),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your phone number';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  labelStyle: const TextStyle(color: Colors.black),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.black),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                obscureText: true,
-                style: const TextStyle(color: Colors.black),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
+                    return 'Please enter the plant quantity';
                   }
                   return null;
                 },
@@ -154,10 +176,11 @@ class UserDetailsPage extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState?.validate() ?? false) {
-                    // Navigate to Polytunnel Registration Page
-                    Navigator.push(
+                    // Navigate to Dashboard Page and clear the back stack
+                    Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (context) => PolytunnelRegistrationPage()),
+                      MaterialPageRoute(builder: (context) => DashboardPage()),
+                          (route) => false,
                     );
                   }
                 },
@@ -169,7 +192,7 @@ class UserDetailsPage extends StatelessWidget {
                   ),
                 ),
                 child: const Text(
-                  'Next',
+                  'Submit',
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),

@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
-import 'polytunnel_registration_page.dart';
+import 'crop_details_page.dart';
 
-class UserDetailsPage extends StatelessWidget {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController addressController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+class PolytunnelRegistrationPage extends StatelessWidget {
+  final TextEditingController polytunnelNameController = TextEditingController();
+  final TextEditingController locationController = TextEditingController();
+  final TextEditingController sizeController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
-  UserDetailsPage({super.key});
+  PolytunnelRegistrationPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Details'),
+        title: const Text('Polytunnel Registration'),
         backgroundColor: Colors.black,
       ),
       body: Padding(
@@ -26,9 +24,9 @@ class UserDetailsPage extends StatelessWidget {
           child: Column(
             children: [
               TextFormField(
-                controller: nameController,
+                controller: polytunnelNameController,
                 decoration: InputDecoration(
-                  labelText: 'Name',
+                  labelText: 'Polytunnel Name',
                   labelStyle: const TextStyle(color: Colors.black),
                   enabledBorder: OutlineInputBorder(
                     borderSide: const BorderSide(color: Colors.grey),
@@ -44,16 +42,16 @@ class UserDetailsPage extends StatelessWidget {
                 style: const TextStyle(color: Colors.black),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your name';
+                    return 'Please enter the polytunnel name';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: emailController,
+                controller: locationController,
                 decoration: InputDecoration(
-                  labelText: 'Email',
+                  labelText: 'Location',
                   labelStyle: const TextStyle(color: Colors.black),
                   enabledBorder: OutlineInputBorder(
                     borderSide: const BorderSide(color: Colors.grey),
@@ -69,16 +67,16 @@ class UserDetailsPage extends StatelessWidget {
                 style: const TextStyle(color: Colors.black),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
+                    return 'Please enter the location';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: addressController,
+                controller: sizeController,
                 decoration: InputDecoration(
-                  labelText: 'Address',
+                  labelText: 'Size (SQFT)',
                   labelStyle: const TextStyle(color: Colors.black),
                   enabledBorder: OutlineInputBorder(
                     borderSide: const BorderSide(color: Colors.grey),
@@ -92,60 +90,10 @@ class UserDetailsPage extends StatelessWidget {
                   fillColor: Colors.white,
                 ),
                 style: const TextStyle(color: Colors.black),
+                keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your address';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: phoneController,
-                decoration: InputDecoration(
-                  labelText: 'Phone',
-                  labelStyle: const TextStyle(color: Colors.black),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.black),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                style: const TextStyle(color: Colors.black),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your phone number';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  labelStyle: const TextStyle(color: Colors.black),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.black),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                obscureText: true,
-                style: const TextStyle(color: Colors.black),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
+                    return 'Please enter the size';
                   }
                   return null;
                 },
@@ -154,10 +102,10 @@ class UserDetailsPage extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState?.validate() ?? false) {
-                    // Navigate to Polytunnel Registration Page
+                    // Navigate to Crop Details Page
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => PolytunnelRegistrationPage()),
+                      MaterialPageRoute(builder: (context) => CropDetailsPage()),
                     );
                   }
                 },

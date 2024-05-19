@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
-
+import 'package:mqtt_client/mqtt_client.dart';
+import 'package:mqtt_client/mqtt_server_client.dart';
 import 'automation_page.dart';
+import 'dart:convert';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -16,10 +18,22 @@ class _DashboardPageState extends State<DashboardPage> {
   int _currentPage = 0;
   late Timer _timer;
   int _currentIndex = 0;
+  late MqttServerClient client;
+
+  String moisture = "Loading...";
+  String humidity = "Loading...";
+  String temperatureC = "Loading...";
+
+  static const String mqttServer = "15.235.192.41";
+  static const int mqttPort = 1883;
+  static const String mqttUser = "thimira";
+  static const String mqttPassword = "371701";
+  static const String mqttTopic = "geowise/sensor";
 
   @override
   void initState() {
     super.initState();
+    _connectToMQTT();
     _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
       if (_currentPage < 2) {
         setState(() {
@@ -38,10 +52,71 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
+  Future<void> _connectToMQTT() async {
+    client = MqttServerClient(mqttServer, '');
+    client.port = mqttPort;
+    client.keepAlivePeriod = 20;
+    client.onDisconnected = _onDisconnected;
+    client.onConnected = _onConnected;
+    client.logging(on: true);
+
+    final connMessage = MqttConnectMessage()
+        .authenticateAs(mqttUser, mqttPassword)
+        .withClientIdentifier('GeoWiseClient')
+        .startClean()
+        .withWillQos(MqttQos.atMostOnce);
+    client.connectionMessage = connMessage;
+
+    try {
+      await client.connect();
+    } catch (e) {
+      print('Exception: $e');
+      _disconnect();
+    }
+
+    if (client.connectionStatus!.state == MqttConnectionState.connected) {
+      print('Connected');
+      client.subscribe(mqttTopic, MqttQos.atMostOnce);
+      client.updates!.listen(_onMessage);
+    } else {
+      print(
+          'ERROR: MQTT client connection failed - disconnecting, state is ${client.connectionStatus!.state}');
+      _disconnect();
+    }
+  }
+
+  void _onDisconnected() {
+    print('Disconnected');
+  }
+
+  void _onConnected() {
+    print('Connected');
+  }
+
+  void _disconnect() {
+    client.disconnect();
+  }
+
+  void _onMessage(List<MqttReceivedMessage<MqttMessage>> event) {
+    final MqttPublishMessage recMess = event[0].payload as MqttPublishMessage;
+    final String message =
+    MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+
+    print('MQTT message: topic is <${event[0].topic}>, payload is <-- $message -->');
+
+    final data = jsonDecode(message);
+    setState(() {
+      moisture = data['moisture'].toString();
+      humidity = data['humidity'].toString();
+      temperatureC = data['temperatureC'].toString();
+    });
+  }
+
   @override
   void dispose() {
     _timer.cancel();
     _pageController.dispose();
+    _disconnect();
     super.dispose();
   }
 
@@ -64,7 +139,6 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-
   Widget _buildDashboardContent() {
     return SingleChildScrollView(
       child: Padding(
@@ -76,8 +150,8 @@ class _DashboardPageState extends State<DashboardPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildInfoCard('Humidity', 'Normal Level', '100mm', const Color(0xFF1C1C1C), Colors.white),
-                _buildInfoCard('Soil Moisture', 'Normal Level', '32%', const Color(0xFFB6FF59), Colors.black),
+                _buildInfoCard('Humidity', 'Current Level', humidity, const Color(0xFF1C1C1C), Colors.white),
+                _buildInfoCard('Soil Moisture', 'Current Level', moisture, const Color(0xFFB6FF59), Colors.black),
               ],
             ),
             const SizedBox(height: 26),
@@ -91,9 +165,9 @@ class _DashboardPageState extends State<DashboardPage> {
                   });
                 },
                 children: [
-                  _buildTemperatureCard('Temperature', 'Inside Polytunnel', '32', 'C', const Color(0xFF7AFF59), Colors.black),
-                  _buildTemperatureCard('Temperature', 'Soil Temperature', '26', 'C', const Color(0xFF7AFF59), Colors.black),
-                  _buildTemperatureCard('Temperature', 'Outside Polytunnel', '28', 'C', const Color(0xFF7AFF59), Colors.black),
+                  _buildTemperatureCard('Temperature', 'Inside Polytunnel', temperatureC, 'C', const Color(0xFF7AFF59), Colors.black),
+                  _buildTemperatureCard('Temperature', 'Soil Temperature', temperatureC, 'C', const Color(0xFF7AFF59), Colors.black),
+                  _buildTemperatureCard('Temperature', 'Outside Polytunnel', temperatureC, 'C', const Color(0xFF7AFF59), Colors.black),
                 ],
               ),
             ),
@@ -311,10 +385,4 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
   }
-}
-
-void main() {
-  runApp(const MaterialApp(
-    home: DashboardPage(),
-  ));
 }
