@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import '../dashboard/dashboard_page.dart';
 
 class CropDetailsPage extends StatefulWidget {
@@ -11,7 +12,7 @@ class CropDetailsPage extends StatefulWidget {
 class _CropDetailsPageState extends State<CropDetailsPage> {
   final TextEditingController cropNameController = TextEditingController();
   final TextEditingController plantedDateController = TextEditingController();
-  final TextEditingController plantQuantityController = TextEditingController();
+  final TextEditingController cropAmountController = TextEditingController();
   final TextEditingController varietyController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
@@ -29,9 +30,51 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
   void dispose() {
     cropNameController.dispose();
     plantedDateController.dispose();
-    plantQuantityController.dispose();
+    cropAmountController.dispose();
     varietyController.dispose();
     super.dispose();
+  }
+
+  Future<void> _submit(BuildContext context) async {
+    if (_formKey.currentState?.validate() ?? false) {
+      try {
+        Dio dio = Dio();
+        final response = await dio.post(
+          'http://192.168.8.191:3000/crop',
+          data: {
+            'name': cropNameController.text,
+            'variety': varietyController.text,
+            'plantDate': plantedDateController.text,
+            'cropeAmount': int.parse(cropAmountController.text),
+            'polytunnelId': 1,
+          },
+          options: Options(
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          ),
+        );
+
+        if (response.statusCode == 201) {
+          print('Crop successfully created');
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => DashboardPage()),
+                (route) => false,
+          );
+        } else {
+          print('Failed to create crop: ${response.statusCode}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to create crop')),
+          );
+        }
+      } catch (e) {
+        print('Error: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -39,7 +82,7 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Crop Details'),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -148,7 +191,7 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: plantQuantityController,
+                controller: cropAmountController,
                 decoration: InputDecoration(
                   labelText: 'Plant Quantity',
                   labelStyle: const TextStyle(color: Colors.black),
@@ -174,15 +217,8 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
               ),
               const SizedBox(height: 30),
               ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState?.validate() ?? false) {
-                    // Navigate to Dashboard Page and clear the back stack
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (context) => DashboardPage()),
-                          (route) => false,
-                    );
-                  }
+                onPressed: () async {
+                  await _submit(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,

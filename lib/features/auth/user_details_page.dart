@@ -36,21 +36,18 @@ class UserDetailsPage extends StatelessWidget {
 
         if (response.statusCode == 201) {
           print(response.statusCode);
-          // If the server returns an OK response, navigate to the Polytunnel Registration Page
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => PolytunnelRegistrationPage()),
           );
         } else {
           print(response.statusCode);
-          // If the server did not return a 200 OK response, display an error message
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Failed to create user')),
           );
         }
       } catch (e) {
         print(e);
-        // Display an error message if the request fails
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e')),
         );

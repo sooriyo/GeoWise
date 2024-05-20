@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'crop_details_page.dart';
 
 class PolytunnelRegistrationPage extends StatelessWidget {
@@ -10,12 +11,51 @@ class PolytunnelRegistrationPage extends StatelessWidget {
 
   PolytunnelRegistrationPage({super.key});
 
+  Future<void> _submit(BuildContext context) async {
+    if (_formKey.currentState?.validate() ?? false) {
+      try {
+        Dio dio = Dio();
+        final response = await dio.post(
+          'http://192.168.8.191:3000/polytunnels',
+          data: {
+            'name': polytunnelNameController.text,
+            'location': locationController.text,
+            'area': int.parse(sizeController.text),
+            'userId': 1,
+
+          },
+          options: Options(
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          ),
+        );
+
+        if (response.statusCode == 201) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => CropDetailsPage()),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to create polytunnel')),
+          );
+        }
+      } catch (e) {
+        print(e);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Polytunnel Registration'),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -100,14 +140,8 @@ class PolytunnelRegistrationPage extends StatelessWidget {
               ),
               const SizedBox(height: 30),
               ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState?.validate() ?? false) {
-                    // Navigate to Crop Details Page
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => CropDetailsPage()),
-                    );
-                  }
+                onPressed: () async {
+                  await _submit(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
