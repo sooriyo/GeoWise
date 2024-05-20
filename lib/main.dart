@@ -19,8 +19,10 @@ class GeoWiseApp extends StatelessWidget {
         primarySwatch: Colors.green,
       ),
       // home: PolytunnelRegistrationPage(),
-      // home:  UserDetailsPage(),
-      home: DashboardPage(),
+      home:  UserDetailsPage(),
+      // home: DashboardPage(),
+      // home: PolytunnelRegistrationPage(),
+
 
     );
   }

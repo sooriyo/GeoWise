@@ -45,8 +45,8 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
             'name': cropNameController.text,
             'variety': varietyController.text,
             'plantDate': plantedDateController.text,
-            'cropeAmount': int.parse(cropAmountController.text),
-            'polytunnelId': 1,
+            'cropAmount': int.parse(cropAmountController.text),  // Correct key and parsing
+            'polytunnelId': 1,  // Ensure this ID is correct
           },
           options: Options(
             headers: {
@@ -64,12 +64,16 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
           );
         } else {
           print('Failed to create crop: ${response.statusCode}');
+          print(response.data);  // Log the response data
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Failed to create crop')),
           );
         }
       } catch (e) {
         print('Error: $e');
+        if (e is DioError && e.response != null) {
+          print('Response data: ${e.response?.data}');
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e')),
         );
@@ -82,7 +86,7 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Crop Details'),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.black,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -178,7 +182,7 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
                   if (pickedDate != null) {
                     setState(() {
                       plantedDateController.text =
-                      "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                      "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
                     });
                   }
                 },

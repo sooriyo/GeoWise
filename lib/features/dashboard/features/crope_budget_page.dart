@@ -1,29 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:geowise/features/dashboard/dashboard_page.dart';
-import 'crop_details_page.dart';
 
-class PolytunnelRegistrationPage extends StatelessWidget {
-  final TextEditingController polytunnelNameController = TextEditingController();
-  final TextEditingController locationController = TextEditingController();
-  final TextEditingController sizeController = TextEditingController();
+class CropBudgetPage extends StatefulWidget {
+  final int cropId;
+
+  CropBudgetPage({required this.cropId, super.key});
+
+  @override
+  _CropBudgetPageState createState() => _CropBudgetPageState();
+}
+
+class _CropBudgetPageState extends State<CropBudgetPage> {
+  final TextEditingController totalCostController = TextEditingController();
+  final TextEditingController expectedRevenueController = TextEditingController();
+  final TextEditingController expectedProfitController = TextEditingController();
+  int plantAmount = 0;
 
   final _formKey = GlobalKey<FormState>();
 
-  PolytunnelRegistrationPage({super.key});
+  @override
+  void initState() {
+    super.initState();
+    _fetchPlantAmount();
+  }
+
+  Future<void> _fetchPlantAmount() async {
+    try {
+      Dio dio = Dio();
+      final response = await dio.get(
+        'http://192.168.8.191:3000/crop/${widget.cropId}',
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          plantAmount = response.data['plantQuantity'];
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to fetch plant amount')),
+        );
+      }
+    } catch (e) {
+      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
 
   Future<void> _submit(BuildContext context) async {
     if (_formKey.currentState?.validate() ?? false) {
       try {
         Dio dio = Dio();
         final response = await dio.post(
-          'http://192.168.8.191:3000/polytunnels',
+          'http://192.168.8.191:3000/crop-budget',
           data: {
-            'name': polytunnelNameController.text,
-            'location': locationController.text,
-            'area': int.parse(sizeController.text),
-            'userId': 1,
-
+            'totalCost': int.parse(totalCostController.text),
+            'expectedRevenue': int.parse(expectedRevenueController.text),
+            'expectedProfit': int.parse(expectedProfitController.text),
+            'cropId': widget.cropId,
           },
           options: Options(
             headers: {
@@ -33,17 +73,16 @@ class PolytunnelRegistrationPage extends StatelessWidget {
         );
 
         if (response.statusCode == 201) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => DashboardPage()),
-          );
+          print('Crop budget successfully created');
+          Navigator.pop(context);
         } else {
+          print('Failed to create crop budget: ${response.statusCode}');
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to create polytunnel')),
+            const SnackBar(content: Text('Failed to create crop budget')),
           );
         }
       } catch (e) {
-        print(e);
+        print('Error: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e')),
         );
@@ -55,8 +94,8 @@ class PolytunnelRegistrationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Polytunnel Registration'),
-        backgroundColor: Colors.white,
+        title: const Text('Crop Budget'),
+        backgroundColor: Colors.black,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -64,60 +103,15 @@ class PolytunnelRegistrationPage extends StatelessWidget {
           key: _formKey,
           child: Column(
             children: [
-              TextFormField(
-                controller: polytunnelNameController,
-                decoration: InputDecoration(
-                  labelText: 'Polytunnel Name',
-                  labelStyle: const TextStyle(color: Colors.black),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.black),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                style: const TextStyle(color: Colors.black),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the polytunnel name';
-                  }
-                  return null;
-                },
+              Text(
+                'Plant Amount: $plantAmount',
+                style: const TextStyle(fontSize: 18, color: Colors.black),
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: locationController,
+                controller: totalCostController,
                 decoration: InputDecoration(
-                  labelText: 'Location',
-                  labelStyle: const TextStyle(color: Colors.black),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.black),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                style: const TextStyle(color: Colors.black),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the location';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: sizeController,
-                decoration: InputDecoration(
-                  labelText: 'Size (SQFT)',
+                  labelText: 'Total Cost',
                   labelStyle: const TextStyle(color: Colors.black),
                   enabledBorder: OutlineInputBorder(
                     borderSide: const BorderSide(color: Colors.grey),
@@ -134,7 +128,59 @@ class PolytunnelRegistrationPage extends StatelessWidget {
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter the size';
+                    return 'Please enter the total cost';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: expectedRevenueController,
+                decoration: InputDecoration(
+                  labelText: 'Expected Revenue',
+                  labelStyle: const TextStyle(color: Colors.black),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.black),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                style: const TextStyle(color: Colors.black),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the expected revenue';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: expectedProfitController,
+                decoration: InputDecoration(
+                  labelText: 'Expected Profit',
+                  labelStyle: const TextStyle(color: Colors.black),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.black),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                style: const TextStyle(color: Colors.black),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the expected profit';
                   }
                   return null;
                 },
@@ -152,7 +198,7 @@ class PolytunnelRegistrationPage extends StatelessWidget {
                   ),
                 ),
                 child: const Text(
-                  'Next',
+                  'Submit',
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),
