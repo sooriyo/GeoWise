@@ -39,15 +39,18 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
     if (_formKey.currentState?.validate() ?? false) {
       try {
         Dio dio = Dio();
+        final data = {
+          'name': cropNameController.text,
+          'variety': varietyController.text,
+          'plantDate': plantedDateController.text,
+          'cropAmount': cropAmountController.text,
+          'polytunnelId': '6',
+        };
+        print('Submitting data: $data'); // Debug print
+
         final response = await dio.post(
           'http://192.168.8.191:3000/crop',
-          data: {
-            'name': cropNameController.text,
-            'variety': varietyController.text,
-            'plantDate': plantedDateController.text,
-            'cropAmount': int.parse(cropAmountController.text),  // Correct key and parsing
-            'polytunnelId': 1,  // Ensure this ID is correct
-          },
+          data: data,
           options: Options(
             headers: {
               'Content-Type': 'application/json',
@@ -182,7 +185,7 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
                   if (pickedDate != null) {
                     setState(() {
                       plantedDateController.text =
-                      "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
+                      "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
                     });
                   }
                 },

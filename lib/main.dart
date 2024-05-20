@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geowise/features/auth/crop_details_page.dart';
 import 'package:geowise/features/auth/polytunnel_registration_page.dart';
 import 'features/auth/user_details_page.dart';
 import 'features/dashboard/dashboard_page.dart';
@@ -21,7 +22,7 @@ class GeoWiseApp extends StatelessWidget {
       // home: PolytunnelRegistrationPage(),
       home:  UserDetailsPage(),
       // home: DashboardPage(),
-      // home: PolytunnelRegistrationPage(),
+      // home: CropDetailsPage(),
 
 
     );

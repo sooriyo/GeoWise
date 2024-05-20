@@ -35,7 +35,7 @@ class PolytunnelRegistrationPage extends StatelessWidget {
         if (response.statusCode == 201) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => DashboardPage()),
+            MaterialPageRoute(builder: (context) => CropDetailsPage()),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
