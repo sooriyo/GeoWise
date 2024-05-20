@@ -9,6 +9,9 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  bool notificationsEnabled = false;
   final _formKey = GlobalKey<FormState>();
 
   Future<void> _updateProfile(BuildContext context) async {
@@ -20,6 +23,9 @@ class _SettingsPageState extends State<SettingsPage> {
           data: {
             'name': nameController.text,
             'email': emailController.text,
+            'password': passwordController.text,
+            'address': addressController.text,
+            'notificationsEnabled': notificationsEnabled,
           },
           options: Options(
             headers: {
@@ -53,18 +59,42 @@ class _SettingsPageState extends State<SettingsPage> {
     Navigator.popUntil(context, ModalRoute.withName('/'));
   }
 
+  Future<void> _deleteAccount(BuildContext context) async {
+    try {
+      Dio dio = Dio();
+      final response = await dio.delete(
+        'http://192.168.8.191:3000/user/delete',
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        print('Account successfully deleted');
+        _logout(context);
+      } else {
+        print('Failed to delete account: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete account')),
+        );
+      }
+    } catch (e) {
+      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: Colors.black,
-      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          key: _formKey,
-          child: Column(
+          child: ListView(
             children: [
               TextFormField(
                 controller: nameController,
@@ -118,6 +148,67 @@ class _SettingsPageState extends State<SettingsPage> {
                   return null;
                 },
               ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: passwordController,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  labelStyle: const TextStyle(color: Colors.black),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.black),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                obscureText: true,
+                style: const TextStyle(color: Colors.black),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your password';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: addressController,
+                decoration: InputDecoration(
+                  labelText: 'Address',
+                  labelStyle: const TextStyle(color: Colors.black),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.black),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                style: const TextStyle(color: Colors.black),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your address';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              SwitchListTile(
+                title: const Text('Enable Notifications', style: TextStyle(color: Colors.black)),
+                value: notificationsEnabled,
+                onChanged: (bool value) {
+                  setState(() {
+                    notificationsEnabled = value;
+                  });
+                },
+              ),
               const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () async {
@@ -147,6 +238,21 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 child: const Text(
                   'Logout',
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+              ),
+              const SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: () => _deleteAccount(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Delete Account',
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),

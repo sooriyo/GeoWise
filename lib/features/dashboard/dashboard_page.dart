@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:geowise/features/dashboard/settings_page.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 import 'automation_page.dart';
@@ -133,7 +134,7 @@ class _DashboardPageState extends State<DashboardPage> {
       case 1:
         return const AutomationPage();
       case 2:
-        return const Center(child: Text('Settings Page'));
+        return SettingsPage();
       default:
         return _buildDashboardContent();
     }
